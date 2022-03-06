@@ -41,24 +41,23 @@ def set_difference(src_A: list, dst_B: list) -> list:
     """returns set difference of src_A and dst_B
     A\\B or A-B = {x: x ∈ A and x ∉ B} a.k.a LEFT OUTER JOIN
     only values in src_A that are NOT in dst_B are returned"""
-    diff_list = []
-    if isinstance(src_A, list) and isinstance(dst_B, list):
-        diff_list = sorted(list(set(src_A) - set(dst_B)))
-    return diff_list
+    return (
+        sorted(list(set(src_A) - set(dst_B)))
+        if isinstance(src_A, list) and isinstance(dst_B, list)
+        else []
+    )
 
 
 def print_dtypes(title: str, ds: pd.Series, show_numbers: bool = True) -> None:
     """ displays dataframe dtypes (pd.Series) to console output """
     method = f"{inspect.currentframe().f_code.co_name}()"
     if isinstance(ds, pd.Series):
-        count = 0
         print(f"\n{method} {title}")
-        for key, val in ds.iteritems():
+        for count, (key, val) in enumerate(ds.iteritems()):
             if show_numbers:
                 print(f"\t{str(val):16}\t{key:48}\tcol_{count:02}")
             else:
                 print(f"\t{str(val):16}\t{key:48}")
-            count += 1
     else:
         print(f"{method} {FAILURE} invalid type {type(ds)}")
 
@@ -92,7 +91,7 @@ def std_dtypes(sf_object: str, df: pd.DataFrame, logger=None) -> pd.DataFrame:
         df["etl_pull_date"] = pull_date
         log_info(logger=logger, msg=f"{method} {SUCCESS} pull_date: '{pull_date}'")
         return df
-    except (OSError, PermissionError, ValueError, pd.errors.DtypeWarning):
+    except (OSError, ValueError, pd.errors.DtypeWarning):
         log_exception(logger=logger, error_msg=f"{method} {FAILURE} '{sf_object}'")
         return pd.DataFrame()
 
@@ -100,20 +99,23 @@ def std_dtypes(sf_object: str, df: pd.DataFrame, logger=None) -> pd.DataFrame:
 def read_csv_to_df(file_path: Path, logger=None) -> pd.DataFrame:
     """ import source '.csv' file to pandas dataframe """
     try:
-        if isinstance(file_path, Path) and file_path.is_file():
-            if file_path.suffix in [".csv", ".gzip", ".bz2"]:
-                df = pd.read_csv(
-                    file_path,
-                    sep=",",
-                    engine="c",
-                    encoding="utf-8",
-                    na_filter=False,
-                    keep_default_na=True,
-                    dtype=object,
-                    low_memory=False,
-                )
-                if isinstance(df, pd.DataFrame):
-                    return df
+        if (
+            isinstance(file_path, Path)
+            and file_path.is_file()
+            and file_path.suffix in [".csv", ".gzip", ".bz2"]
+        ):
+            df = pd.read_csv(
+                file_path,
+                sep=",",
+                engine="c",
+                encoding="utf-8",
+                na_filter=False,
+                keep_default_na=True,
+                dtype=object,
+                low_memory=False,
+            )
+            if isinstance(df, pd.DataFrame):
+                return df
     except (AttributeError, ValueError, pd.errors.DtypeWarning):
         log_exception(logger=logger, error_msg=f"'{file_path}'")
     return pd.DataFrame()

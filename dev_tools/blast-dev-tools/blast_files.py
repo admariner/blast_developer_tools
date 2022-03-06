@@ -56,20 +56,23 @@ def touch_file(file_path: Path) -> bool:
 
 def is_valid_file(file_path: Path) -> bool:
     """Checks if file: exists, is not directory, has correct extension and data"""
-    is_valid = False
-    if isinstance(file_path, Path) and file_path.is_file():
-        if file_path.suffix in VALID_EXTENSIONS:
-            if file_path.stat().st_size > 1:
-                is_valid = True
-    return is_valid
+    return bool(
+        isinstance(file_path, Path)
+        and file_path.is_file()
+        and file_path.suffix in VALID_EXTENSIONS
+        and file_path.stat().st_size > 1
+    )
 
 
 def get_file_size(file_path: Path) -> int:
     """Checks if file exists, is not directory, has correct extension, returns file_size in bytes"""
     file_size = 0
-    if isinstance(file_path, Path) and file_path.is_file():
-        if file_path.suffix in VALID_EXTENSIONS:
-            file_size = file_path.stat().st_size
+    if (
+        isinstance(file_path, Path)
+        and file_path.is_file()
+        and file_path.suffix in VALID_EXTENSIONS
+    ):
+        file_size = file_path.stat().st_size
     return int(file_size)
 
 
@@ -204,7 +207,7 @@ def purge_prior_extract(file_path: Path, logger=None):
         purge_count = len(purged_files)
         if purge_count > 0:
             log_info(logger=logger, msg=f"{method} removed {purge_count} file(s) {purged_files}")
-    except (OSError, PermissionError):
+    except OSError:
         log_exception(logger=logger, error_msg=f"{method} {FAILURE} {file_path}")
 
 
@@ -219,10 +222,7 @@ def join_sub_folder(cwd_path=DATA_PATH, folders=["subdir1", "subdir2"], filename
         subdir_list.extend(folders)
     if isinstance(folders, str):
         subdir = folders.replace(" ", "")
-        if "," in folders:
-            subdir_list = subdir.split(",")
-        else:
-            subdir_list = [folders]
+        subdir_list = subdir.split(",") if "," in folders else [folders]
     subdir_list.append(filename)
     child_path = cwd_path.joinpath(*subdir_list)
     if not child_path.parent.exists():
@@ -317,9 +317,7 @@ def generate_random_data(file_path, binary=False, megabytes=0.01, logger=None) -
         if file_path.is_file() and stat_size >= file_size_bytes:
             log_info(logger=logger, msg=f"{file_path.name} ({stat_size} bytes)")
             is_generated = True
-    except AttributeError:
-        log_exception(logger=logger, error_msg=f"{method} {file_path.name}")
-    except FileNotFoundError:
+    except (AttributeError, FileNotFoundError):
         log_exception(logger=logger, error_msg=f"{method} {file_path.name}")
     return is_generated
 
