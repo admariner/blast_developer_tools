@@ -25,9 +25,7 @@ def get_time_zone(tzinfo="America/Los_Angeles"):
     """
     return validated time zone
     """
-    valid_tz = "UTC"
-    if tzinfo in pytz.common_timezones:
-        valid_tz = tzinfo
+    valid_tz = tzinfo if tzinfo in pytz.common_timezones else "UTC"
     return pytz.timezone(valid_tz)
 
 
@@ -119,13 +117,10 @@ def is_start_of_month() -> bool:
     Checks if timestamp from now() is after first day at midnight of current calendar month
     """
     method = f"{inspect.currentframe().f_code.co_name}()"
-    is_first = False
     timestamp_now_dt = datetime.now(tz=get_time_zone()).replace(microsecond=0)
     start_current_month_dt = get_start_current_month()
     diff_ts = timestamp_now_dt - start_current_month_dt
-    if timestamp_now_dt.day == start_current_month_dt.day:
-        is_first = True
-    return is_first
+    return timestamp_now_dt.day == start_current_month_dt.day
 
 
 def get_date_range(start_date="2022-01-01", end_date="2022-01-07", date_fmt="%Y-%m-%d", tzinfo=timezone.utc) -> list:

@@ -77,7 +77,7 @@ ALL_DATE_COLUMNS = []
 ALL_TIMESTAMP_COLUMNS = []
 ALL_COLUMNS = []
 
-for obj_name, field_lut in OBJECT_MAP.items():
+for field_lut in OBJECT_MAP.values():
     for field, pd_type in field_lut.items():
         if "object" in pd_type and field not in ALL_STRING_COLUMNS:
             ALL_STRING_COLUMNS.append(field)
@@ -106,9 +106,7 @@ PD_TYPE_MAP = {
 
 def show_datatype_frequency():
     """optimization: check frequency of datatypes"""
-    total_fields = 0
-    for field_dict in list(OBJECT_MAP.values()):
-        total_fields += len(field_dict)
+    total_fields = sum(len(field_dict) for field_dict in list(OBJECT_MAP.values()))
     print(f"\nALL_STRING_COLUMNS    \tcount: {len(ALL_STRING_COLUMNS)} \t{ALL_STRING_COLUMNS}")
     print(f"ALL_INT_COLUMNS       \tcount: {len(ALL_INT_COLUMNS)} \t{ALL_INT_COLUMNS}")
     print(f"ALL_FLOAT_COLUMNS     \tcount: {len(ALL_FLOAT_COLUMNS)} \t{ALL_FLOAT_COLUMNS}")

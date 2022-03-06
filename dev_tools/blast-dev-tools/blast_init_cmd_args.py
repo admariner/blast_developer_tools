@@ -31,14 +31,13 @@ def parse_toml(config_path=Path(CWD_PATH, "config", "blast_cfg_example.toml"), l
     method = f"{inspect.currentframe().f_code.co_name}()"
     is_parsed = False
     try:
-        if config_path.is_file() and config_path.stat().st_size > 0:
-            config = toml.load(config_path)
-            os.environ["ETL_NAME"] = config['etl']['name']
-            os.environ["ETL_TIMEZONE"] = config["etl"]["timezone"]
-            log_info(logger=logger, msg=f"{method} {SUCCESS} {config_path.name}")
-            is_parsed = True
-        else:
+        if not config_path.is_file() or config_path.stat().st_size <= 0:
             raise FileNotFoundError
+        config = toml.load(config_path)
+        os.environ["ETL_NAME"] = config['etl']['name']
+        os.environ["ETL_TIMEZONE"] = config["etl"]["timezone"]
+        log_info(logger=logger, msg=f"{method} {SUCCESS} {config_path.name}")
+        is_parsed = True
     except (KeyError, FileNotFoundError):
         log_exception(logger=logger, error_msg=f"{method} {FAILURE} {config_path.name}")
     return is_parsed
@@ -104,10 +103,7 @@ def parse_cmd_args(logger=None) -> dict:
         parser.error(f"'{staging_table}' not in {valid_tbl}")
 
     include_all = args["include_all"]
-    if include_all.lower() in ["true", "t", "yes", "y", "1"]:
-        args["include_all"] = True
-    else:
-        args["include_all"] = False
+    args["include_all"] = include_all.lower() in ["true", "t", "yes", "y", "1"]
     log_info(logger=logger, msg=f"{method} {args}")
     return args
 
